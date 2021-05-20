@@ -19,20 +19,27 @@ public class NotesService {
     }
 
     public int addNote(Note note, String username) {
+        User user = userMapper.selectByUsername(username);
         if (note.getNoteId() != null) {
-            return notesMapper.update(note);
+            return notesMapper.update(note, user.getUserId());
         } else {
-            User user = userMapper.selectByUsername(username);
             note.setUserId(user.getUserId());
             return notesMapper.insert(note);
         }
     }
 
-    public List<Note> getNotes() {
-        return notesMapper.selectAll();
+    public List<Note> getNotes(String username) {
+        User user = userMapper.selectByUsername(username);
+        return notesMapper.selectAll(user.getUserId());
     }
 
-    public int deleteNote(Long id) {
-        return notesMapper.delete(id);
+    public int deleteNote(Long id, String username) {
+        User user = userMapper.selectByUsername(username);
+        return notesMapper.delete(id, user.getUserId());
+    }
+
+    public boolean duplicateNote(Note note, String username) {
+        User user = userMapper.selectByUsername(username);
+        return notesMapper.selectByTitleAndDescription(note.getNoteTitle(), note.getNoteDescription(), user.getUserId()) != null;
     }
 }

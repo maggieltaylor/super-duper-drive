@@ -8,6 +8,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.security.Principal;
+
 @Controller
 @RequestMapping("/home")
 public class HomeController {
@@ -22,10 +24,10 @@ public class HomeController {
     }
 
     @GetMapping
-    public String viewHomepage(Model model) {
-        model.addAttribute("files", filesService.getFiles());
-        model.addAttribute("notes", notesService.getNotes());
-        model.addAttribute("creds", credentialsService.getCreds());
+    public String viewHomepage(Model model, Principal principal) {
+        model.addAttribute("files", filesService.getFiles(principal.getName()));
+        model.addAttribute("notes", notesService.getNotes(principal.getName()));
+        model.addAttribute("creds", credentialsService.getCreds(principal.getName()));
 
         return "home";
     }

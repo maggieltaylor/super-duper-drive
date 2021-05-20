@@ -22,16 +22,20 @@ public class CredentialsController {
 
     @PostMapping
     public String addCred(Credential credential, Model model, Principal principal) {
-        int rowsAdded = credentialsService.addCred(credential, principal.getName());
-        if (rowsAdded < 0) {
-            model.addAttribute("dbError", true);
+        if (credentialsService.duplicateUsername(credential, principal.getName())) {
+            model.addAttribute("errorMessage", "Credential's username already exists.");
+        } else {
+            int rowsAdded = credentialsService.addCred(credential, principal.getName());
+            if (rowsAdded < 0) {
+                model.addAttribute("dbError", true);
+            }
         }
         return "result";
     }
 
     @DeleteMapping("/{id}")
-    public String deleteCred(@PathVariable("id") Long id, Model model) {
-        int rowsDeleted = credentialsService.deleteCred(id);
+    public String deleteCred(@PathVariable("id") Long id, Model model, Principal principal) {
+        int rowsDeleted = credentialsService.deleteCred(id, principal.getName());
         if (rowsDeleted < 0) {
             model.addAttribute("dbError", true);
         }

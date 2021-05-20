@@ -19,16 +19,22 @@ public class NotesController {
 
     @PostMapping
     public String addNote(Note note, Model model, Principal principal) {
-        int rowsAdded = notesService.addNote(note, principal.getName());
-        if (rowsAdded < 0) {
-            model.addAttribute("dbError", true);
+        if (note.getNoteDescription().length() > 1000) {
+            model.addAttribute("errorMessage", "Note can't be saved as description exceeds 1000 characters.");
+        } else if (notesService.duplicateNote(note, principal.getName())) {
+            model.addAttribute("errorMessage", "Note already exists.");
+        } else {
+            int rowsAdded = notesService.addNote(note, principal.getName());
+            if (rowsAdded < 0) {
+                model.addAttribute("dbError", true);
+            }
         }
         return "result";
     }
 
     @DeleteMapping("/{id}")
-    public String deleteNote(@PathVariable("id") Long id, Model model) {
-        int rowsDeleted = notesService.deleteNote(id);
+    public String deleteNote(@PathVariable("id") Long id, Model model, Principal principal) {
+        int rowsDeleted = notesService.deleteNote(id, principal.getName());
         if (rowsDeleted < 0) {
             model.addAttribute("dbError", true);
         }

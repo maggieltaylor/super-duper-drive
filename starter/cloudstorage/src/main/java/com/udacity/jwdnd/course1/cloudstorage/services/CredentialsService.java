@@ -25,6 +25,8 @@ public class CredentialsService {
     }
 
     public int addCred(Credential credential, String username) {
+        User user = userMapper.selectByUsername(username);
+
         SecureRandom random = new SecureRandom();
         byte[] key = new byte[16];
         random.nextBytes(key);
@@ -32,16 +34,16 @@ public class CredentialsService {
         credential.setPassword(encryptionService.encryptValue(credential.getPassword(), encodedKey));
         credential.setKey(encodedKey);
         if (credential.getCredentialId() != null) {
-            return credentialsMapper.update(credential);
+            return credentialsMapper.update(credential, user.getUserId());
         } else {
-            User user = userMapper.selectByUsername(username);
             credential.setUserId(user.getUserId());
             return credentialsMapper.insert(credential);
         }
     }
 
-    public List<CredentialView> getCreds() {
-        return credentialsMapper.selectAll()
+    public List<CredentialView> getCreds(String username) {
+        User user = userMapper.selectByUsername(username);
+        return credentialsMapper.selectAll(user.getUserId())
                 .stream()
                 .map(credential -> new CredentialView(
                         credential.getCredentialId(),
@@ -54,9 +56,14 @@ public class CredentialsService {
                 .collect(Collectors.toList());
     }
 
-    public int deleteCred(Long id) {
-        return credentialsMapper.delete(id);
+    public int deleteCred(Long id, String username) {
+        User user = userMapper.selectByUsername(username);
+        return credentialsMapper.delete(id, user.getUserId());
     }
 
 
+    public boolean duplicateUsername(Credential credential, String username) {
+        User user = userMapper.selectByUsername(username);
+        return credentialsMapper.selectByUsername(credential.getUsername(), user.getUserId()) != null;
+    }
 }

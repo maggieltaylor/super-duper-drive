@@ -28,7 +28,7 @@ public class FilesController {
     public String uploadFile(@RequestParam("file") MultipartFile multipartFile, Model model, Principal principal) throws IOException {
         if (multipartFile.isEmpty()) {
             model.addAttribute("errorMessage", "No file to upload.");
-        } else if (filesService.duplicateFilename(multipartFile.getOriginalFilename())) {
+        } else if (filesService.duplicateFilename(multipartFile.getOriginalFilename(), principal.getName())) {
             model.addAttribute("errorMessage", "The filename already exists.");
         } else {
             int rowsAdded = filesService.addFile(multipartFile, principal.getName());
@@ -40,8 +40,8 @@ public class FilesController {
     }
 
     @DeleteMapping("/{id}")
-    public String deleteFile(@PathVariable("id") Long id, Model model) {
-        int rowsDeleted = filesService.deleteFile(id);
+    public String deleteFile(@PathVariable("id") Long id, Model model, Principal principal) {
+        int rowsDeleted = filesService.deleteFile(id, principal.getName());
         if (rowsDeleted < 0) {
             model.addAttribute("dbError", true);
         }
@@ -50,8 +50,8 @@ public class FilesController {
 
     @GetMapping("/{id}")
     @ResponseBody
-    public ResponseEntity<Resource> viewFile(@PathVariable("id") Long id) {
-        File file = filesService.getFile(id);
+    public ResponseEntity<Resource> viewFile(@PathVariable("id") Long id, Principal principal) {
+        File file = filesService.getFile(id, principal.getName());
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(file.getContentType()))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")

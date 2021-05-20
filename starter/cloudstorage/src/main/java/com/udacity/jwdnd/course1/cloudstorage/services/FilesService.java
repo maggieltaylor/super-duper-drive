@@ -26,19 +26,23 @@ public class FilesService {
         return filesMapper.insert(file);
     }
 
-    public List<File> getFiles() {
-        return filesMapper.selectAll();
+    public List<File> getFiles(String username) {
+        User user = userMapper.selectByUsername(username);
+        return filesMapper.selectAll(user.getUserId());
     }
 
-    public int deleteFile(Long id) {
-        return filesMapper.delete(id);
+    public int deleteFile(Long id, String username) {
+        User user = userMapper.selectByUsername(username);
+        return filesMapper.delete(id, user.getUserId());
     }
 
-    public File getFile(Long id) {
-        return filesMapper.findById(id);
+    public File getFile(Long id, String username) {
+        User user = userMapper.selectByUsername(username);
+        return filesMapper.findById(id, user.getUserId());
     }
 
-    public boolean duplicateFilename(String filename) {
-        return filesMapper.findByFilename(filename) != null;
+    public boolean duplicateFilename(String filename, String username) {
+        User user = userMapper.selectByUsername(username);
+        return filesMapper.findByFilename(filename, user.getUserId()) != null;
     }
 }
